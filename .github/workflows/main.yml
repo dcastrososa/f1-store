@@ -16,7 +16,7 @@ jobs:
       - name: Install Dependecies
         run: npm ci --ignore-scripts
 
-      - name: bUILD
+      - name: Build
         run: npm run build
 
       - name: Compress Files
