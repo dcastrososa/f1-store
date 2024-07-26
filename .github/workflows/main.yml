@@ -39,5 +39,23 @@ jobs:
       - name: Init Elastic Beanstalk
         run: echo "n" | eb init f1-oficial-store-api --region ${{vars.AWS_REGION}}
 
+      - name: Extract Specific Secrets and Set Environment Variables
+        run: |
+          secrets=$(aws secretsmanager get-secret-value --secret-id ${{ secrets.SECRET_MANAGER_SECRET_ID }} --region ${{ vars.AWS_REGION }} | jq -r '.SecretString')
+          
+          # Extract specific values using jq
+          db_name=$(echo "$secrets" | jq -r '.DB_NAME')
+          db_password=$(echo "$secrets" | jq -r '.DB_PASSWORD')
+          db_user=$(echo "$secrets" | jq -r '.DB_USER')
+          db_port=$(echo "$secrets" | jq -r '.DB_PORT')
+          db_host=$(echo "$secrets" | jq -r '.DB_HOST')
+          
+          # Set environment variables
+          echo "::set-env name=DB_NAME::$db_name"
+          echo "::set-env name=DB_PASSWORD::$db_password"
+          echo "::set-env name=DB_USER::$db_user"
+          echo "::set-env name=DB_PORT::$db_port"
+          echo "::set-env name=DB_HOST::$db_host"
+
       - name: Deploy to Elastic Beanstalk
         run: eb deploy F1-oficial-store-api-dev --staged --label f1-store-api-${{github.event.repository.pushed_at}}
