@@ -40,7 +40,7 @@ jobs:
         run: echo "n" | eb init f1-oficial-store-api --region ${{vars.AWS_REGION}}
 
       - name: Get Secrets from AWS Secrets Manager
-        uses: aws-actions/aws-secrets-manager-get-secret-value@v4
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
         with:
           secret-id: ${{ secrets.SECRET_MANAGER_SECRET_ID }}
           region: ${{ vars.AWS_REGION }}
