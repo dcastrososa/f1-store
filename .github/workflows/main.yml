@@ -32,7 +32,7 @@ jobs:
       - name: Install Elastic Beanstalk CLI
         run: |
           sudo apt-get install -y python3-pip
-          pip3 install awsebcli --updgrade --user
+          pip3 install awsebcli --upgrade --user
           echo 'export PATH="$HOME/. local/bin:$PATH"' »> $HOME/.bashrc
           source SHOME/. bashrc
 
