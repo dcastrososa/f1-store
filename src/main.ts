@@ -8,8 +8,8 @@ async function bootstrap() {
   app.enableCors();
 
   const config = new DocumentBuilder()
-    .setTitle('API Gateway service')
-    .setDescription('API Gateway service for Propello App')
+    .setTitle('F1 Store')
+    .setDescription('Api to test things on AWS :)')
     .setVersion('1.0')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
