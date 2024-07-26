@@ -12,32 +12,32 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-  
+
       - name: Install Dependecies
         run: npm ci --ignore-scripts
-  
+
       - name: bUILD
         run: npm run build
-  
+
       - name: Compress Files
-        run: zip --symlinks -r fi-store.zip
-  
+        run: zip --symlinks -r fi-store.zip .
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{vars.AWS_ACCESS_KEY_ID}}
           aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
           aws-region: ${{vars.AWS_REGION}}
-  
+
       - name: Install Elastic Beanstalk CLI
         run: |
           sudo apt-get install -y python3-pip
           pip3 install awsebcli --updgrade --user
           echo 'export PATH="$HOME/. local/bin:$PATH"' »> $HOME/.bashrc
           source SHOME/. bashrc
-  
+
       - name: Init Elastic Beanstalk
         run: echo "n" | eb init my-api --region ${{vars.AWS_REGION}}
-  
+
       - name: Deploy to Elastic Beanstalk
         run: eb deploy test --staged --label f1-store-api-${{github.event.repository.pushed_at}}
