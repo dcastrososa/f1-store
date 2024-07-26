@@ -1,5 +1,3 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -10,6 +8,6 @@ import { ApiTags } from '@nestjs/swagger';
 export class ProductsController {
   @Get('')
   findAll() {
-    return [{ id: 1, name: 'Mercedes T-Shirt', test: process.env || 'o' }];
+    return [{ id: 1, name: 'Mercedes T-Shirt' }];
   }
 }
