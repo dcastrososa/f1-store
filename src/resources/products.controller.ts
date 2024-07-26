@@ -9,7 +9,7 @@ export class ProductsController {
   @Get('')
   findAll() {
     return [
-      { id: 1, name: 'Mercedes T-Shirt', test: process.env.DB_NAME || 'ci' },
+      { id: 1, name: 'Mercedes T-Shirt', test: process.env.DB_NAME || 'o' },
     ];
   }
 }
