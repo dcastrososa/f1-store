@@ -42,17 +42,13 @@ jobs:
       - name: Get Secrets from AWS Secrets Manager
         uses: aws-actions/aws-secretsmanager-get-secrets@v2
         with:
-          secret-id: ${{ secrets.SECRET_MANAGER_SECRET_ID }}
-          region: ${{ vars.AWS_REGION }}
-        id: get-secrets
-
-      - name: Create .env file
-        run: |
-          echo "DB_NAME=$(echo ${{ steps.get-secrets.outputs.secretString }} | jq -r '.DB_NAME')" > .env
-          echo "DB_PASSWORD=$(echo ${{ steps.get-secrets.outputs.secretString }} | jq -r '.DB_PASSWORD')" >> .env
-          echo "DB_USER=$(echo ${{ steps.get-secrets.outputs.secretString }} | jq -r '.DB_USER')" >> .env
-          echo "DB_PORT=$(echo ${{ steps.get-secrets.outputs.secretString }} | jq -r '.DB_PORT')" >> .env
-          echo "DB_HOST=$(echo ${{ steps.get-secrets.outputs.secretString }} | jq -r '.DB_HOST')" >> .env
+          secret-ids: |
+            ${{vars.SECRET_MANAGER_SECRET_ID}}
+            DB_HOST, DB_HOST
+            DB_PORT, DB_PORT
+            DB_NAME, DB_NAME
+            DB_USER, DB_USER
+            DB_PASSWORD, DB_PASSWORD
 
       - name: Deploy to Elastic Beanstalk
         run: eb deploy F1-oficial-store-api-dev --staged --label f1-store-api-${{github.event.repository.pushed_at}}
