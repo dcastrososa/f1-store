@@ -1,5 +1,5 @@
 #pull image from oficial node
-FROM node:16.19.0
+FROM node:20
 
 # Create app directory
 WORKDIR /usr/src/app
