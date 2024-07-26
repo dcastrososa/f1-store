@@ -42,12 +42,7 @@ jobs:
       - name: Get Secrets from AWS Secrets Manager
         uses: aws-actions/aws-secretsmanager-get-secrets@v2
         with:
-          secret-ids: |
-            DB_HOST, dbHost
-            DB_PORT, dbPort
-            DB_NAME, dbName
-            DB_USER, dbUser
-            DB_PASSWORD, dbPassword
+          secret-ids: dev
 
       - name: Deploy to Elastic Beanstalk
         run: eb deploy F1-oficial-store-api-dev --staged --label f1-store-api-${{github.event.repository.pushed_at}}
