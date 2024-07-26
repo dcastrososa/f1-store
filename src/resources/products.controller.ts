@@ -8,6 +8,8 @@ import { ApiTags } from '@nestjs/swagger';
 export class ProductsController {
   @Get('')
   findAll() {
-    return [{ id: 1, name: 'Mercedes T-Shirt', test: process.env.DB_NAME }];
+    return [
+      { id: 1, name: 'Mercedes T-Shirt', test: process.env.DB_NAME || 'ci' },
+    ];
   }
 }
