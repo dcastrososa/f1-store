@@ -43,7 +43,6 @@ jobs:
         uses: aws-actions/aws-secretsmanager-get-secrets@v2
         with:
           secret-ids: |
-            ${{vars.SECRET_MANAGER_SECRET_ID}}
             DB_HOST, dbHost
             DB_PORT, dbPort
             DB_NAME, dbName
