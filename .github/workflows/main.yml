@@ -38,43 +38,25 @@ jobs:
         run: docker logout ${{steps.login-ecr.outputs.registry}}
 
 
-      - name: SSH into EC2 instance and deploy
+      - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@master
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
+          IMAGE_TAG: ${{github.sha}}
         with:
+          script: |
+            aws configure set aws_access_key_id > echo $AWS_ACCESS_KEY_ID
+            aws configure set aws_secret_access_key > echo $AWS_SECRET_ACCESS_KEY
+            aws configure set default.region > echo $AWS_REGION
+            aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin 586367578102.dkr.ecr.ap-south-1.amazonaws.com
+            sudo docker rm -f `sudo docker ps -q` 
+            sudo docker run -d -p 8080:80 010526250323.dkr.ecr.us-east-1.amazonaws.com/f1-store-api:$IMAGE_TAG
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          envs: |
-            IMAGE_TAG=${{github.sha}}
-            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION=us-east-1
-          script: |
-            echo "AWS CLI version: $(aws --version)"
-            echo "Docker version: $(docker --version)"
-            
-            echo "Stop the current running container if exist..."
-            docker stop f1-store-api || true
-            
-            echo "Remove the previous container..."
-            docker rm f1-store-api || true
-            
-            echo "AWS credentials set...."
-            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-            export AWS_REGION=${AWS_REGION}
-            
-            echo "Logging in to ECR...."
-            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 817722091681.dkr.ecr.af-south-1.amazonaws.com
-            echo "Logged in successful..."
-            
-            echo "Pulling  image from ECR..."
-            echo "Docker pull command: docker pull \"${{ secrets.AWS_REGISTRY_URL }}:${{ env.IMAGE_TAG }}\""
-            echo "Docker pull completed..."
-                        
-            echo "Running the container..."
-            echo "Running the container..."
-            docker run -d \  
-            --name f1-store-api \
-            -p 80:80 '010526250323.dkr.ecr.us-east-1.amazonaws.com/f1-store-api:${{ env.IMAGE_TAG }}'
-
+          key: ${{ secrets.KEY }}
+          port: 22
+          envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG h
