@@ -37,6 +37,7 @@ jobs:
         if: always()
         run: docker logout ${{steps.login-ecr.outputs.registry}}
 
+
       - name: SSH into EC2 instance and deploy
         uses: appleboy/ssh-action@master
         with:
@@ -70,8 +71,9 @@ jobs:
             echo "Pulling  image from ECR..."
             echo "Docker pull command: docker pull \"${{ secrets.AWS_REGISTRY_URL }}/${{ secrets.REPOSITORY_NAME }}:${{ env.TAG }}\""
             echo "Docker pull completed..."
-            
+                        
             echo "Running the container..."
+            echo "docker run -d --name f1-store-api -p 80:80 \"\${{ secrets.ECR_REPOSITORY }}/f1-store-api:\${{ env.IMAGE_TAG }}\""
             docker run -d \
             --name f1-store-api \
             -p 80:80 "010526250323.dkr.ecr.us-east-1.amazonaws.com/f1-store-api:${{ env.IMAGE_TAG }}"
