@@ -2,7 +2,7 @@ name: NestJS-Backend:CI
 
 on:
   push:
-    branches: ['master']
+    branches: ['main']
 
 jobs:
   build:
