@@ -74,5 +74,5 @@ jobs:
             echo "Running the container..."
             docker run -d \
             --name f1-store-api \
-            --env-file  /path/to/dot/env \
+            --env-file  env \
             -p 80:80 "${{ secrets.ECR_REPOSITORY }}/f1-store-api:${{ env.IMAGE_TAG }}"
