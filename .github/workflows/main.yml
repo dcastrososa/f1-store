@@ -73,7 +73,7 @@ jobs:
             echo "Docker pull completed..."
                         
             echo "Running the container..."
-            echo "docker run -d --name f1-store-api -p 80:80 \"\${{ secrets.ECR_REPOSITORY }}/f1-store-api:\${{ env.IMAGE_TAG }}\""
             docker run -d \
             --name f1-store-api \
-            -p 80:80 "010526250323.dkr.ecr.us-east-1.amazonaws.com/f1-store-api:${{ env.IMAGE_TAG }}"
+            -p 80:80 '010526250323.dkr.ecr.us-east-1.amazonaws.com/f1-store-api:${{ env.IMAGE_TAG }}'
+
