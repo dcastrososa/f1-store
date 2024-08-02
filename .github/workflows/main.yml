@@ -69,7 +69,7 @@ jobs:
             echo "Logged in successful..."
             
             echo "Pulling  image from ECR..."
-            echo "Docker pull command: docker pull \"${{ secrets.AWS_REGISTRY_URL }}/${{ secrets.REPOSITORY_NAME }}:${{ env.IMAGE_TAG }}\""
+            echo "Docker pull command: docker pull \"${{ secrets.AWS_REGISTRY_URL }}:${{ env.IMAGE_TAG }}\""
             echo "Docker pull completed..."
                         
             echo "Running the container..."
