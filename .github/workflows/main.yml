@@ -69,11 +69,12 @@ jobs:
             echo "Logged in successful..."
             
             echo "Pulling  image from ECR..."
-            echo "Docker pull command: docker pull \"${{ secrets.AWS_REGISTRY_URL }}/${{ secrets.REPOSITORY_NAME }}:${{ env.TAG }}\""
+            echo "Docker pull command: docker pull \"${{ secrets.AWS_REGISTRY_URL }}/${{ secrets.REPOSITORY_NAME }}:${{ env.IMAGE_TAG }}\""
             echo "Docker pull completed..."
                         
             echo "Running the container..."
-            docker run -d \
+            echo "Running the container..."
+            docker run -d --debug \  # Added --debug flag
             --name f1-store-api \
             -p 80:80 '010526250323.dkr.ecr.us-east-1.amazonaws.com/f1-store-api:${{ env.IMAGE_TAG }}'
 
