@@ -74,7 +74,7 @@ jobs:
                         
             echo "Running the container..."
             echo "Running the container..."
-            docker run -d --debug \  # Added --debug flag
+            docker run -d \  
             --name f1-store-api \
             -p 80:80 '010526250323.dkr.ecr.us-east-1.amazonaws.com/f1-store-api:${{ env.IMAGE_TAG }}'
 
