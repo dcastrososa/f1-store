@@ -57,6 +57,6 @@ jobs:
             sudo docker run -d -p 8080:80 010526250323.dkr.ecr.us-east-1.amazonaws.com/f1-store-api:$IMAGE_TAG
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.KEY }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           port: 22
           envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG h
