@@ -44,7 +44,7 @@ jobs:
           AWS_REGION: us-east-1
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
-#          IMAGE_TAG: ${{github.sha}}
+          IMAGE_TAG: ${{github.sha}}
         with:
           script: |
             aws configure set aws_access_key_id > echo $AWS_ACCESS_KEY_ID
