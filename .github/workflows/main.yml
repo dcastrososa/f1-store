@@ -28,13 +28,10 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
-          IMAGE_TAG: ${{github.sha}}
+          IMAGE_TAG: latest
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-
-      - name: Debug IMAGE_TAG
-        run: echo $IMAGE_TAG
 
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@master
@@ -44,21 +41,19 @@ jobs:
           AWS_REGION: us-east-1
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
-          IMAGE_TAG: ${{github.sha}}
         with:
           script: |
             aws configure set aws_access_key_id > echo $AWS_ACCESS_KEY_ID
             aws configure set aws_secret_access_key > echo $AWS_SECRET_ACCESS_KEY
             aws configure set default.region > echo $AWS_REGION
             aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 010526250323.dkr.ecr.us-east-1.amazonaws.com
-            echo "Running docker with image tag: $IMAGE_TAG"
             sudo docker stop $(sudo docker ps -a -q)
-            sudo docker run -d -p 80:80 $ECR_REGISTRY/$ECR_REPOSITORY:23f858054c248183a787d733e4e5af66d7f53942
+            sudo docker run -d -p 80:80 $ECR_REGISTRY/$ECR_REPOSITORY:latest
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           port: 22
-          envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG h
+          envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY h
 
       - name: Logout to Amazon ECR
         if: always()
