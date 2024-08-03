@@ -33,6 +33,9 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
+      - name: Debug IMAGE_TAG
+        run: echo $IMAGE_TAG
+
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@master
         env:
@@ -50,7 +53,7 @@ jobs:
             aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 010526250323.dkr.ecr.us-east-1.amazonaws.com
             sudo docker stop $(sudo docker ps -a -q)
             sudo docker rm -v $(sudo docker ps -aq -f status=exited)
-            sudo docker run -d -p 80:80 010526250323.dkr.ecr.us-east-1.amazonaws.com/f1-store-api:$IMAGE_TAG
+            sudo docker run -d -p 80:80 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
