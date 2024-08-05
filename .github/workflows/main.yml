@@ -53,6 +53,7 @@ jobs:
             aws configure set default.region > echo $AWS_REGION
             aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REGISTRY
             sudo docker stop $(sudo docker ps -a -q)
+            sudo docker rm -v $(sudo docker ps -aq -f status=exited)
             sudo docker run -d -p 80:80 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Logout to Amazon ECR
