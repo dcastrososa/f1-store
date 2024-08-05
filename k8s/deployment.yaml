@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: f1-store-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: f1-store-api
+  template:
+    metadata:
+      labels:
+        app: f1-store-api
+    spec:
+      containers:
+        - name: f1-store-api
+          image: ya-veremos
+          ports:
+            - containerPort: 80

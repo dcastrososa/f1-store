@@ -4,21 +4,102 @@ on:
   push:
     branches: ['main']
 
+# deploy to EC2 instance
+#jobs:
+#  build:
+#    name: 'Build Image'
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v3
+#
+#      - name: Configure AWS Credentials
+#        uses: aws-actions/configure-aws-credentials@v1
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ${{ secrets.AWS_REGION }}
+#
+#      - name: Login to Amazon ECR
+#        id: login-ecr
+#        uses: aws-actions/amazon-ecr-login@v1
+#
+#      - name: Build, tag, and push image to Amazon ECR
+#        env:
+#          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#          ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
+#          IMAGE_TAG: ${{github.sha}}
+#        run: |
+#          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+#          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+#
+#      - name: executing remote ssh commands using password
+#        uses: appleboy/ssh-action@v1.0.3
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_REGION: ${{ secrets.AWS_REGION }}
+#          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#          ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
+#          IMAGE_TAG: ${{github.sha}}
+#        with:
+#          host: ${{ secrets.EC2_HOST }}
+#          username: ${{ secrets.EC2_USER }}
+#          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+#          envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG
+#          script: |
+#            aws configure set aws_access_key_id > echo $AWS_ACCESS_KEY_ID
+#            aws configure set aws_secret_access_key > echo $AWS_SECRET_ACCESS_KEY
+#            aws configure set default.region > echo $AWS_REGION
+#            aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REGISTRY
+#            sudo docker stop $(sudo docker ps -a -q)
+#            sudo docker rm -v $(sudo docker ps -aq -f status=exited)
+#            sudo docker run -d -p 80:80 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+#
+#      - name: Logout to Amazon ECR
+#        if: always()
+#        run: docker logout ${{steps.login-ecr.outputs.registry}}
+
+# deploy to cluster
+
 jobs:
   build:
-    name: 'Build Image'
+    name: Deploy to cluster
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: install kubectl packages
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          mkdir -p ~/.kube/
+          echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > ~/.kube/config
+
+      - name: Kubectl commands
+        env:
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+        run: |
+          echo "==describe==="
+          kubectl describe deployment/$REPOSITORY_NAME 
+          echo "==image==="
+          kubectl describe deployment/$REPOSITORY_NAME | grep -oE 'Image:\s+\S+'
+          echo "==uri docker==="
+          kubectl describe deployment/$REPOSITORY_NAME | grep -oE 'Image:\s+\S+' | awk '{print $2}'
+          echo "==version==="
+          old_version=$(kubectl describe deployment/$REPOSITORY_NAME | grep -oE 'Image:\s+\S+' | awk '{print $2}')
+          echo $old_version
+          echo $old_version > ~/.kube/old_version
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -27,35 +108,43 @@ jobs:
       - name: Build, tag, and push image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
-          IMAGE_TAG: ${{github.sha}}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: executing remote ssh commands using password
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Deploy to Dev cluster
+        uses: kodermax/kubectl-aws-eks@main
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
-          IMAGE_TAG: ${{github.sha}}
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG
-          script: |
-            aws configure set aws_access_key_id > echo $AWS_ACCESS_KEY_ID
-            aws configure set aws_secret_access_key > echo $AWS_SECRET_ACCESS_KEY
-            aws configure set default.region > echo $AWS_REGION
-            aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REGISTRY
-            sudo docker stop $(sudo docker ps -a -q)
-            sudo docker rm -v $(sudo docker ps -aq -f status=exited)
-            sudo docker run -d -p 80:80 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+          KUBECTL_VERSION: "v1.23.6"
 
-      - name: Logout to Amazon ECR
-        if: always()
-        run: docker logout ${{steps.login-ecr.outputs.registry}}
+        with:
+          args: set image deployment/$ECR_REPOSITORY $ECR_REPOSITORY=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: verify deployment
+        uses: kodermax/kubectl-aws-eks@main
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
+          KUBECTL_VERSION: "v1.23.6"
+        with:
+          args: rollout status deployment/${{ github.event.repository.name }}
+
+      - name: Check docker versions
+        env:
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+        run: |
+          new_version=$(kubectl describe deployment/$REPOSITORY_NAME | grep -oE 'Image:\s+\S+' | awk '{print $2}')
+          old_version=$(cat ~/.kube/old_version)
+          echo "old_version: " 
+          echo $old_version
+          echo "new_version: "
+          echo $new_version
+          if [ "$old_version" = "$new_version" ]; then
+            echo "The previous docker image matches the new one, the pods will be restarted"
+            kubectl rollout restart deployment/$REPOSITORY_NAME
+          fi
