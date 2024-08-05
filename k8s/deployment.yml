@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: f1-store-api
-          image: ya-veremos
+          image: 010526250323.dkr.ecr.us-east-1.amazonaws.com/f1-store-api/0960434b7b3baf0277ba040ad9246c58580a24ca
           ports:
             - containerPort: 80
