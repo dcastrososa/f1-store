@@ -8,6 +8,6 @@ import { ApiTags } from '@nestjs/swagger';
 export class ProductsController {
   @Get('')
   findAll() {
-    return [{ id: 1, name: 'Mercedes T-Shirt' }];
+    return [{ id: 1, name: 'Mercedes T-Shirt 2024' }];
   }
 }
