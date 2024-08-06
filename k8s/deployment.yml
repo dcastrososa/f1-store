@@ -34,27 +34,3 @@ spec:
       targetPort: 80
   type: LoadBalancer
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: f1-store-ingress
-  annotations:
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/target-type: ip
-#    external-dns.alpha.kubernetes.io/hostname: a84aa51d6ec9a4f48bd22ece7e88d152-1755934926.us-east-1.elb.amazonaws.com
-#    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:898730021473:certificate/35216157-601a-49c9-9c27-9d297c0962e6
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
-    alb.ingress.kubernetes.io/ssl-redirect: '443'
-    alb.ingress.kubernetes.io/healthcheck-path: /api
-spec:
-  ingressClassName: alb
-  rules:
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: f1-store-api-service
-                port:
-                  number: 80
