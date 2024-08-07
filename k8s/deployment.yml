@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: f1-store
   labels:
-    app: f1-store
+    app: f1-store  # Updated to match the Service's selector
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: f1-store-api
+      app: f1-store  # Updated to match the Service's selector
   template:
     metadata:
       labels:
-        app: f1-store-api
+        app: f1-store  # Updated to match the Service's selector
     spec:
       containers:
         - name: f1-store-api
@@ -27,10 +27,9 @@ metadata:
   name: f1-store-api-service
 spec:
   selector:
-    app: f1-store
+    app: f1-store  # Matching the Deployment's labels
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
   type: LoadBalancer
----
