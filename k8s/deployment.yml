@@ -5,21 +5,20 @@ metadata:
   labels:
     app: f1-store
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
-      app: f1-store-api
+      app: f1-store  # Fixed the label to match the service selector
   template:
     metadata:
       labels:
-        app: f1-store-api
+        app: f1-store  # Fixed the label to match the service selector
     spec:
       containers:
         - name: f1-store-api
-          image: 010526250323.dkr.ecr.us-east-1.amazonaws.com/f1-store-api/0960434b7b3baf0277ba040ad9246c58580a24ca
+          image: 010526250323.dkr.ecr.us-east-1.amazonaws.com/f1-store-api:15554f8aca891a0a00b69fe91334797eb28f899a
           ports:
             - containerPort: 80
-
 ---
 apiVersion: v1
 kind: Service
@@ -27,10 +26,30 @@ metadata:
   name: f1-store-api-service
 spec:
   selector:
-    app: f1-store-api
+    app: f1-store  # Fixed the label to match the deployment
   ports:
-    - protocol: TCP
-      port: 80
+    - port: 80
       targetPort: 80
-  type: LoadBalancer
+  type: NodePort
 ---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: f1-store-api-ingress-ci-2
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /api
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: f1-store-api-service
+                port:
+                  number: 80
